@@ -1,4 +1,5 @@
-import { type ComponentPublicInstance, type ComputedRef, computed, ref } from 'vue'
+import type { Ref } from 'vue'
+import { type ComponentPublicInstance, type ComputedRef, computed, ref, unref } from 'vue'
 import type { ZodIssue, ZodType } from 'zod'
 import { errorChain, fieldChain } from './chains'
 import { safeParseForm } from './parse-form'
@@ -32,8 +33,10 @@ export interface UseZormOptions<Data> {
   customIssues?: ZodIssue[]
 }
 
+type MaybeRef<T> = Ref<T> | T
+
 export function useZorm<Schema extends ZodType<any>>(
-  formName: string,
+  formName: MaybeRef<string>,
   schema: Schema,
   options?: UseZormOptions<ReturnType<Schema['parse']>>,
 ): Zorm<Schema> {
@@ -109,14 +112,12 @@ export function useZorm<Schema extends ZodType<any>>(
       ...customIssues.value,
     ]))
 
-    const fields = fieldChain(formName, schema)
+    const fields = fieldChain(unref(formName), schema)
 
     return {
       getRef: getForm,
       validate,
-      get form() {
-        return formRef.value
-      },
+      form: formRef,
       validation: validation as ComputedRef<SafeParseResult<Schema> | null>,
       fields,
       errors,

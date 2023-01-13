@@ -57,12 +57,3 @@ export function useValue<T>(
 
   return value
 }
-
-export function Value<T>(
-  props: ValueSubscription<T> & {
-    children: (value: undefined extends T ? string : T) => any
-  },
-) {
-  const value = useValue(props)
-  return props.children(value)
-}

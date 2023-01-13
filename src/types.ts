@@ -102,7 +102,7 @@ export type SafeParseResult<Schema extends GenericSchema> = ReturnType<
 >
 
 export interface Zorm<Schema extends GenericSchema> {
-  form: HTMLFormElement | null
+  form: Ref<HTMLFormElement | null>
   getRef: (el: Element | ComponentPublicInstance | null) => void
   fields: FieldChainFromSchema<Schema>
   errors: Ref<ErrorChainFromSchema<Schema> & ErrorGetter>
