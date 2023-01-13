@@ -11,16 +11,20 @@
     "url": "git+https://github.com/wobsoriano/vue-zorm.git"
   },
   "bugs": "https://github.com/wobsoriano/vue-zorm/issues",
-  "keywords": ["form", "zod", "vue"],
+  "keywords": [
+    "form",
+    "zod",
+    "vue"
+  ],
   "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
+      "require": "./dist/index.js",
       "import": "./dist/index.mjs"
     }
   },
-  "main": "./dist/index.cjs",
+  "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "typesVersions": {
@@ -37,7 +41,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "unbuild",
+    "build-fast": "tsup src/index.ts --format cjs,esm --minify",
+    "build": "pnpm run build-fast --dts-resolve",
     "dev": "vite serve dev",
     "dev:build": "vite build dev",
     "dev:preview": "vite preview dev",
@@ -54,8 +59,8 @@
     "@vitejs/plugin-vue": "^4.0.0",
     "@vue/tsconfig": "^0.1.3",
     "eslint": "^8.30.0",
+    "tsup": "^6.5.0",
     "typescript": "^4.9.4",
-    "unbuild": "^1.0.2",
     "vite": "^4.0.3",
     "vue": "^3.2.45",
     "zod": "^3.20.2"
