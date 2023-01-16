@@ -104,13 +104,12 @@ export function useZorm<Schema extends ZodType<any>>(
       }
     }
 
-    const customIssues = computed(() => options?.customIssues ?? [])
+    const customIssues = options?.customIssues ?? []
     const error = computed(() => !validation.value?.success ? validation.value?.error : undefined)
-
-    const errors = computed(() => errorChain(schema, [
-      ...(error.value?.issues ?? []),
-      ...customIssues.value,
-    ]))
+    const errors = errorChain(schema, [
+      ...error.value?.issues ?? [],
+      ...customIssues,
+    ])
 
     const fields = fieldChain(unref(formName), schema)
 

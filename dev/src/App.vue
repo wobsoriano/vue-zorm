@@ -11,31 +11,31 @@ const FormSchema = z.object({
     .transform(Number),
 })
 
-const { getRef, validation, fields, errors } = useZorm('signup', FormSchema, {
+const zo = useZorm('signup', FormSchema, {
   onValidSubmit(e) {
     e.preventDefault()
     console.log(`Form ok!\n${JSON.stringify(e.data, null, 2)}`)
   },
 })
 
-const disabled = computed(() => validation.value?.success === false)
+const disabled = computed(() => zo.validation.value?.success === false)
 </script>
 
 <template>
   <div>
-    <form :ref="getRef">
-      Name: <input type="text" :name="fields.name()" :class="errors.name('errored')">
-      <div v-if="errors.name()">
-        error: {{ errors.name()?.code }}
+    <form :ref="zo.getRef">
+      Name: <input type="text" :name="zo.fields.name()" :class="zo.errors.name('errored')">
+      <div v-if="zo.errors.name()">
+        error: {{ zo.errors.name()?.code }}
       </div>
-      Age: <input type="text" :name="fields.age()" :class="errors.age('errored')">
-      <div v-if="errors.age()">
-        error: {{ errors.age()?.code }}
+      Age: <input type="text" :name="zo.fields.age()" :class="zo.errors.age('errored')">
+      <div v-if="zo.errors.age()">
+        error: {{ zo.errors.age()?.code }}
       </div>
       <button :disabled="disabled" type="submit">
         Sign up!
       </button>
-      <pre>Validation status: {{ JSON.stringify(validation, null, 2) }}</pre>
+      <pre>Validation status: {{ JSON.stringify(zo.validation, null, 2) }}</pre>
     </form>
   </div>
 </template>

@@ -105,10 +105,10 @@ export interface Zorm<Schema extends GenericSchema> {
   form: Ref<HTMLFormElement | null>
   getRef: (el: Element | ComponentPublicInstance | null) => void
   fields: FieldChainFromSchema<Schema>
-  errors: Ref<ErrorChainFromSchema<Schema> & ErrorGetter>
+  errors: ErrorChainFromSchema<Schema> & ErrorGetter
   validate(): SafeParseResult<Schema>
   validation: Ref<SafeParseResult<Schema> | null>
-  customIssues: Ref<ZodIssue[]>
+  customIssues: ZodIssue[]
 }
 
 /**
