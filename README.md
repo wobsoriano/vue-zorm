@@ -15,6 +15,9 @@ Features / opinions
     -   With [FormData](https://developer.mozilla.org/en-US/docs/Web/API/FormData) or JSON
     -   Eg. works with any JavaScript backend
     -   Nuxt, vite-plugin-ssr, Express, Node.js, CF Workers, Deno etc.
+-   Tiny: Less than 5kb (minified & gzipped)
+    -   Tree shakes to be even smaller!
+    -   No dependencies, only peer deps for React and Zod
 -   No controlled inputs or context providers required
     -   The form is validated directly from the `<form>` DOM element
     -   As performant as Vue form libraries can get!
@@ -22,7 +25,7 @@ Features / opinions
 ## Install
 
 ```bash
-npm install vue-zorm
+npm install zod vue-zorm
 ```
 
 ## Usage
