@@ -1,3 +1,4 @@
+import { defineComponent, h } from 'vue'
 import type { ZodIssue } from 'zod'
 import type {
   ErrorChainFromSchema,
@@ -85,11 +86,17 @@ export function errorChain<Schema extends GenericSchema>(
       }
 
       if (args[0]) {
-        if (issue)
-          return args[0]
+        if (issue) {
+          if (typeof args[0] === 'object' && !Array.isArray(args[0]) && 'setup' in args[0]) {
+            return defineComponent({
+              setup: () => () => h(args[0], issue),
+            })
+          }
 
-        else
-          return undefined
+          return args[0]
+        }
+
+        else { return undefined }
       }
 
       return issue || undefined

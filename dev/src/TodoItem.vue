@@ -28,13 +28,13 @@ const todoField = computed(() => props.zorm.fields.todos(props.index))
       :name="todoField.task()"
       :class="todoError.task('errored')"
     >
-    <RenderError v-if="todoError.task()" :message="todoError.task()?.message!" />
+    <component :is="todoError.task(RenderError)" />
     Priority
     <input
       type="text"
       :name="todoField.priority()"
       :class="todoError.priority('errored')"
     >
-    <RenderError v-if="todoError.priority()" :message="todoError.priority()?.message!" />
+    <component :is="todoError.priority(RenderError)" />
   </fieldset>
 </template>
