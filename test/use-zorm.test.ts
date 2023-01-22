@@ -1,105 +1,83 @@
 /* eslint-disable vue/one-component-per-file */
-import { fireEvent, render, screen } from '@testing-library/vue'
-import { expect, test, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
+import { afterEach, expect, test, vi } from 'vitest'
+import { defineComponent, watch } from 'vue'
 import userEvent from '@testing-library/user-event'
-import { defineComponent, watchEffect } from 'vue'
 import * as z from 'zod'
 import { useZorm } from '../src'
 
-test('single field validation', async () => {
-  const Schema = z.object({
+afterEach(() => {
+  cleanup()
+})
+
+function createComponentWithSchema(opts: {
+  template: string
+  schema?: z.ZodSchema
+}) {
+  const finalSchema = opts.schema ?? z.object({
     thing: z.string().min(1),
   })
-
   const App = defineComponent({
     setup() {
-      const { getRef, fields, errors } = useZorm('form', Schema)
+      const zo = useZorm('form', finalSchema)
 
       return {
-        getRef,
-        fields,
-        errors,
+        zo,
       }
     },
+    template: opts.template,
+  })
+
+  return App
+}
+
+test('single field validation', async () => {
+  const App = createComponentWithSchema({
     template: `
-      <form data-testid="form" :ref="getRef">
-        <input :name="fields.thing()" />
-        <div v-if="errors.thing()" data-testid="error">{{ errors.thing().code }}</div>
+      <form data-testid="form" :ref="zo.getRef">
+        <input :name="zo.fields.thing()" />
+        <div v-if="zo.errors.thing()" data-testid="error">{{ zo.errors.thing().code }}</div>
       </form>
     `,
   })
 
-  const wrapper = render(App)
+  render(App)
 
   await fireEvent.submit(screen.getByTestId('form'))
 
   expect(screen.queryByTestId('error')?.textContent).toBe('too_small')
-
-  wrapper.unmount()
 })
 
 test('first blur does not trigger error', async () => {
-  const Schema = z.object({
-    thing: z.string().min(1),
-  })
-
-  const App = defineComponent({
-    setup() {
-      const { getRef, fields, errors } = useZorm('form', Schema)
-
-      return {
-        getRef,
-        fields,
-        errors,
-      }
-    },
+  const App = createComponentWithSchema({
     template: `
-      <form data-testid="form" :ref="getRef">
-        <input data-testid="input" :name="fields.thing()" />
-        <div v-if="errors.thing()" data-testid="error">error</div>
+      <form data-testid="form" :ref="zo.getRef">
+        <input data-testid="input" :name="zo.fields.thing()" />
+        <div v-if="zo.errors.thing()" data-testid="error">error</div>
         <div v-else data-testid="ok">ok</div>
       </form>
     `,
   })
 
-  const wrapper = render(App)
+  render(App)
 
   await fireEvent.blur(screen.getByTestId('input'))
 
   expect(screen.queryByTestId('ok')?.textContent).toBe('ok')
-
-  wrapper.unmount()
 })
 
 test('form is validated on blur after the first submit', async () => {
-  const Schema = z.object({
-    thing: z.string().min(1),
-  })
-
-  const App = defineComponent({
-    setup() {
-      const { getRef, fields, errors } = useZorm('form', Schema)
-
-      watchEffect(() => {
-        console.log('zxc', errors.value.thing())
-      })
-
-      return {
-        getRef,
-        fields,
-        errors,
-      }
-    },
+  const App = createComponentWithSchema({
     template: `
-      <form data-testid="form" :ref="getRef">
-        <input data-testid="input" :name="fields.thing()" />
-        <div v-if="errors.thing()" data-testid="error">error</div>
+      <form data-testid="form" :ref="zo.getRef">
+        <input data-testid="input" :name="zo.fields.thing()" />
+        <div v-if="zo.errors.thing()" data-testid="error">error</div>
         <div v-else data-testid="ok">ok</div>
       </form>
     `,
   })
 
-  const wrapper = render(App)
+  render(App)
 
   await fireEvent.submit(screen.getByTestId('form'))
 
@@ -108,39 +86,40 @@ test('form is validated on blur after the first submit', async () => {
   await userEvent.type(screen.getByTestId('input'), 'content')
   await fireEvent.blur(screen.getByTestId('input'))
 
-  console.log(wrapper.html())
-
   expect(screen.queryByTestId('ok')?.textContent).toBe('ok')
 })
 
-// test('form data is validated', async () => {
-//   const Schema = z.object({
-//     thing: z.string().min(1),
-//   })
+test('form data is validated', async () => {
+  const Schema = z.object({
+    thing: z.string().min(1),
+  })
 
-//   const spy = vi.fn()
+  const spy = vi.fn()
 
-//   const App = defineComponent({
-//     setup() {
-//       const { getRef, fields, errors } = useZorm('form', Schema)
+  const App = defineComponent({
+    setup() {
+      const zo = useZorm('form', Schema)
 
-//       return {
-//         getRef,
-//         fields,
-//         errors,
-//       }
-//     },
-//     template: `
-//       <form data-testid="form" :ref="getRef">
-//         <input data-testid="input" :name="fields.thing()" />
-//       </form>
-//     `,
-//   })
+      watch(() => zo.validation, (val) => {
+        if (val?.success)
+          spy(val.data)
+      })
 
-//   render(App)
+      return {
+        zo,
+      }
+    },
+    template: `
+      <form data-testid="form" :ref="zo.getRef">
+        <input data-testid="input" :name="zo.fields.thing()" />
+      </form>
+    `,
+  })
 
-//   await userEvent.type(screen.getByTestId('input'), 'content')
-//   fireEvent.submit(screen.getByTestId('form'))
+  render(App)
 
-//   expect(spy).toHaveBeenCalledWith({ thing: 'content' })
-// })
+  await userEvent.type(screen.getByTestId('input'), 'content')
+  await fireEvent.submit(screen.getByTestId('form'))
+
+  expect(spy).toHaveBeenCalledWith({ thing: 'content' })
+})

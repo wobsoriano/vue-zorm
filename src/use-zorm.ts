@@ -27,9 +27,9 @@ export interface UseZormOptions<Data> {
      */
   onValidSubmit?: (event: ValidSubmitEvent<Data>) => any
 
-  setupListeners?: boolean
+  setupListeners?: MaybeRef<boolean>
 
-  customIssues?: ZodIssue[]
+  customIssues?: MaybeRef<ZodIssue[]>
 }
 
 export function useZorm<Schema extends ZodType<any>>(
@@ -62,7 +62,7 @@ export function useZorm<Schema extends ZodType<any>>(
           )
         }
 
-        if (form && options?.setupListeners !== false) {
+        if (form && unref(options?.setupListeners) !== false) {
           form.addEventListener('change', changeHandler)
           form.addEventListener('submit', submitHandler)
         }
@@ -77,7 +77,7 @@ export function useZorm<Schema extends ZodType<any>>(
     }
 
     function changeHandler() {
-      if (submittedOnceRef.value)
+      if (!submittedOnceRef.value)
         return
 
       validate()
@@ -101,7 +101,7 @@ export function useZorm<Schema extends ZodType<any>>(
       }
     }
 
-    const customIssues = computed(() => options?.customIssues ?? [])
+    const customIssues = computed(() => unref(options?.customIssues) ?? [])
     const error = computed(() => !validation.value?.success ? validation.value?.error : undefined)
 
     const errors = computed(() => errorChain(schema, [
