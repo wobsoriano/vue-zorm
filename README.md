@@ -76,6 +76,12 @@ const disabled = computed(() => zo.validation?.success === false)
     <pre>Validation status: {{ JSON.stringify(zo.validation, null, 2) }}</pre>
   </form>
 </template>
+
+<style>
+.errored {
+  border: 4px solid red;
+}
+</style>
 ```
 
 Also checkout [this classic TODOs example](https://vue-zorm-todo.vercel.app/) demonstrating almost every feature in the library. The code is [here](https://github.com/wobsoriano/vue-zorm/tree/main/dev).
