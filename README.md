@@ -117,7 +117,14 @@ const FormSchema = z.object({
 
 and put the array index to `users(index)`:
 
+```html
+<div v-for="(user, index) in users" :key="index">
+  <input type="text" :name="zo.fields.users(index).email()">
+  <input type="password" :name="zo.fields.users(index).password()">
+</div>
+```
 
+And all this is type checked 👌
 
 ## License
 
