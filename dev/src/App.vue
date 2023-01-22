@@ -14,6 +14,7 @@ const FormSchema = z.object({
 const zo = useZorm('signup', FormSchema, {
   onValidSubmit(e) {
     e.preventDefault()
+    // eslint-disable-next-line no-console
     console.log(`Form ok!\n${JSON.stringify(e.data, null, 2)}`)
   },
 })
