@@ -87,7 +87,8 @@ export function errorChain<Schema extends GenericSchema>(
 
       if (args[0]) {
         if (issue) {
-          if (typeof args[0] === 'object' && !Array.isArray(args[0]) && 'setup' in args[0]) {
+          const isSetupComponent = typeof args[0] === 'object' && !Array.isArray(args[0]) && 'setup' in args[0]
+          if (isSetupComponent) {
             return defineComponent({
               setup: (_props, { slots }) => () => h(args[0], issue, slots),
             })
