@@ -28,7 +28,7 @@ Features / opinions
 npm install zod vue-zorm
 ```
 
-## Usage
+## Example
 
 ```html
 <script setup lang="ts">
@@ -77,6 +77,8 @@ const disabled = computed(() => zo.validation?.success === false)
   </form>
 </template>
 ```
+
+Also checkout [this classic TODOs example](https://vue-zorm-todo.vercel.app/) demonstrating almost every feature in the library
 
 ## Nested data
 
