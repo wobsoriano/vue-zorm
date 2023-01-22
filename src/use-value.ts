@@ -1,4 +1,4 @@
-import { type Ref, ref, watchPostEffect } from 'vue'
+import { type Ref, ref, unref, watchPostEffect } from 'vue'
 import type { MaybeRef } from './types'
 import { isValuedElement } from './utils'
 
@@ -29,7 +29,7 @@ export function useValue<T>(
       if (!isValuedElement(input))
         return
 
-      if (opts.name !== input.name)
+      if (unref(opts.name) !== input.name)
         return
 
       if (mapRef.value)
@@ -38,18 +38,16 @@ export function useValue<T>(
         value.value(input.value ?? '')
     }
 
-    const initialInput = form.querySelector(`[name="${opts.name}"]`)
+    const initialInput = form.querySelector(`[name="${unref(opts.name)}"]`)
 
     if (initialInput)
       listener({ target: initialInput })
 
-    const event = opts.event ?? 'input'
+    const event = unref(opts.event) ?? 'input'
 
-    // @ts-expect-error: TODO
     form.addEventListener(event, listener)
 
     onInvalidate(() => {
-      // @ts-expect-error: TODO
       form.removeEventListener(event, listener)
     })
   })

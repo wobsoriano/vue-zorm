@@ -1,7 +1,7 @@
 {
   "name": "vue-zorm",
   "version": "0.1.3",
-  "packageManager": "pnpm@7.19.0",
+  "packageManager": "pnpm@7.25.0",
   "description": "",
   "author": "Robert Soriano <sorianorobertc@gmail.com>",
   "license": "MIT",
@@ -14,7 +14,8 @@
   "keywords": [
     "form",
     "zod",
-    "vue"
+    "vue",
+    "validation"
   ],
   "sideEffects": false,
   "exports": {
