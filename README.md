@@ -48,7 +48,7 @@ const zo = useZorm('signup', FormSchema, {
   },
 })
 
-const disabled = computed(() => zo.validation.value?.success === false)
+const disabled = computed(() => zo.validation?.success === false)
 </script>
 
 <template>
