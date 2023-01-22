@@ -31,6 +31,7 @@ const range = computed(() => Array(todos.value).fill(0).map((_, i) => i))
       :class="zo.errors.meta.listName('errored')"
     >
     <component :is="zo.errors.meta.listName(RenderError)" />
+    <!-- <RenderError v-if="zo.errors.meta.listName()" :message="zo.errors.meta.listName()?.message!" /> -->
     <h2>Todos</h2>
     <TodoItem
       v-for="(_r, index) in range"

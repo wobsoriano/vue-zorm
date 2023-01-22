@@ -60,13 +60,15 @@ function _fieldChain(ns: string, path: readonly string[]) {
   return proxy
 }
 
+const noop = () => {}
+
 export function errorChain<Schema extends GenericSchema>(
   schema: Schema,
   issues: ZodIssue[],
   _path?: readonly (string | number)[],
 ): ErrorChainFromSchema<Schema> & ErrorGetter {
   const path = _path || []
-  const proxy: any = new Proxy(() => {}, {
+  const proxy: any = new Proxy(noop, {
     apply(_target, _thisArg, args) {
       if (typeof args[0] === 'number')
         return errorChain(schema, issues, [...path, args[0]])
