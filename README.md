@@ -78,6 +78,47 @@ const disabled = computed(() => zo.validation?.success === false)
 </template>
 ```
 
+## Nested data
+
+### Objects
+
+Create a Zod type with a nested object
+
+```ts
+const FormSchema = z.object({
+  user: z.object({
+    email: z.string().min(1),
+    password: z.string().min(8),
+  }),
+})
+```
+
+and just create the input names with `.user.`:
+
+```html
+<input type="text" :name="zo.fields.user.email()" />
+<input type="password" :name="zo.fields.user.password()" />
+```
+
+### Arrays
+
+Array of user objects for example:
+
+```ts
+const FormSchema = z.object({
+  users: z.array(
+    z.object({
+      email: z.string().min(1),
+      password: z.string().min(8),
+    }),
+  ),
+})
+```
+
+and put the array index to `users(index)`:
+
+
+
 ## License
 
 MIT
