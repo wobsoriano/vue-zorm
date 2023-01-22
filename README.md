@@ -78,7 +78,7 @@ const disabled = computed(() => zo.validation?.success === false)
 </template>
 ```
 
-Also checkout [this classic TODOs example](https://vue-zorm-todo.vercel.app/) demonstrating almost every feature in the library
+Also checkout [this classic TODOs example](https://vue-zorm-todo.vercel.app/) demonstrating almost every feature in the library. The code is [here](https://github.com/wobsoriano/vue-zorm/tree/main/dev).
 
 ## Nested data
 
