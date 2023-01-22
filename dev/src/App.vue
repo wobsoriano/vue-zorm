@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useZorm } from 'vue-zorm'
 import { FormSchema } from './schema'
 import TodoItem from './TodoItem.vue'
+import RenderError from './RenderError.vue'
 
 const zo = useZorm('signup', FormSchema, {
   onValidSubmit(e) {
@@ -29,6 +30,7 @@ const range = computed(() => Array(todos.value).fill(0).map((_, i) => i))
       :name="zo.fields.meta.listName()"
       :class="zo.errors.meta.listName('errored')"
     >
+    <component :is="zo.errors.meta.listName(RenderError)" />
     <h2>Todos</h2>
     <TodoItem
       v-for="(_r, index) in range"
