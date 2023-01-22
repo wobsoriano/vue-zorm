@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useZorm } from 'vue-zorm'
 import { z } from 'zod'
 
-const users = [
+const users = ref([
   { email: '', password: '' },
+  { email: 'test@gmail.com', password: '123456' },
   { email: '', password: '' },
-  { email: '', password: '' },
-]
+])
 
 const FormSchema = z.object({
   users: z.array(
@@ -33,8 +33,8 @@ const disabled = computed(() => zo.validation?.success === false)
   <div>
     <form :ref="zo.getRef">
       <template v-for="(user, index) in users" :key="user">
-        <input type="text" :name="zo.fields.users(index).email()">
-        <input type="password" :name="zo.fields.users(index).password()">
+        <input v-model="user.email" type="text" :name="zo.fields.users(index).email()">
+        <input v-model="user.password" type="password" :name="zo.fields.users(index).password()">
         <br><br>
       </template>
       <button :disabled="disabled" type="submit">
