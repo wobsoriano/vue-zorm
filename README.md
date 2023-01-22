@@ -17,7 +17,7 @@ Features / opinions
     -   Nuxt, vite-plugin-ssr, Express, Node.js, CF Workers, Deno etc.
 -   No controlled inputs or context providers required
     -   The form is validated directly from the `<form>` DOM element
-    -   As performant as React form libraries can get!
+    -   As performant as Vue form libraries can get!
 
 ## Install
 
