@@ -49,6 +49,7 @@
     "dev:preview": "vite preview dev",
     "lint": "eslint .",
     "prepublishOnly": "pnpm build",
+    "release": "bumpp && npm publish",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
@@ -67,6 +68,7 @@
     "@types/testing-library__jest-dom": "^5.14.5",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vue/test-utils": "^2.2.7",
+    "bumpp": "^8.2.1",
     "eslint": "^8.30.0",
     "jsdom": "^21.0.0",
     "tsup": "^6.5.0",
