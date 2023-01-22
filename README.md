@@ -187,7 +187,7 @@ import { useZorm } from 'vue-zorm'
 
 const zo = useZorm('signup', FormSchema, { setupListeners: false })
 
-function onSubmit() {
+function onSubmit(e) {
   const validation = zo.validate()
 
   if (!validation.success)
