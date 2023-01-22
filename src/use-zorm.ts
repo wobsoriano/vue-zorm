@@ -1,9 +1,8 @@
-import type { Ref } from 'vue'
-import { type ComponentPublicInstance, type ComputedRef, computed, ref, unref } from 'vue'
+import { type ComponentPublicInstance, computed, reactive, ref, unref } from 'vue'
 import type { ZodIssue, ZodType } from 'zod'
 import { errorChain, fieldChain } from './chains'
 import { safeParseForm } from './parse-form'
-import type { SafeParseResult, Zorm } from './types'
+import type { MaybeRef, Zorm } from './types'
 
 export interface ValidSubmitEvent<Data> {
   /**
@@ -32,8 +31,6 @@ export interface UseZormOptions<Data> {
 
   customIssues?: ZodIssue[]
 }
-
-type MaybeRef<T> = Ref<T> | T
 
 export function useZorm<Schema extends ZodType<any>>(
   formName: MaybeRef<string>,
@@ -104,22 +101,23 @@ export function useZorm<Schema extends ZodType<any>>(
       }
     }
 
-    const customIssues = options?.customIssues ?? []
+    const customIssues = computed(() => options?.customIssues ?? [])
     const error = computed(() => !validation.value?.success ? validation.value?.error : undefined)
-    const errors = errorChain(schema, [
+
+    const errors = computed(() => errorChain(schema, [
       ...error.value?.issues ?? [],
-      ...customIssues,
-    ])
+      ...customIssues.value,
+    ]))
 
     const fields = fieldChain(unref(formName), schema)
 
-    return {
+    return reactive({
       getRef: getForm,
       validate,
       form: formRef,
-      validation: validation as ComputedRef<SafeParseResult<Schema> | null>,
+      validation,
       fields,
       errors,
       customIssues,
-    }
+    }) as Zorm<Schema>
 }

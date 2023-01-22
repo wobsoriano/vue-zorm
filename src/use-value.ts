@@ -1,7 +1,6 @@
 import { type Ref, ref, watchPostEffect } from 'vue'
+import type { MaybeRef } from './types'
 import { isValuedElement } from './utils'
-
-type MaybeRef<T> = Ref<T> | T
 
 export interface ValueSubscription<T> {
   name: MaybeRef<string>

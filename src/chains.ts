@@ -17,7 +17,8 @@ function addArrayIndex(path: readonly string[], index: number) {
 
 export function fieldChain<Schema extends GenericSchema>(
   ns: string,
-  _schema: Schema,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  schema: Schema,
 ): FieldChainFromSchema<Schema> {
   return new Proxy(
     {},

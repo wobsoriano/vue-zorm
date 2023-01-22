@@ -102,12 +102,12 @@ export type SafeParseResult<Schema extends GenericSchema> = ReturnType<
 >
 
 export interface Zorm<Schema extends GenericSchema> {
-  form: Ref<HTMLFormElement | null>
+  form: HTMLFormElement | null
   getRef: (el: Element | ComponentPublicInstance | null) => void
   fields: FieldChainFromSchema<Schema>
   errors: ErrorChainFromSchema<Schema> & ErrorGetter
   validate(): SafeParseResult<Schema>
-  validation: Ref<SafeParseResult<Schema> | null>
+  validation: SafeParseResult<Schema> | null
   customIssues: ZodIssue[]
 }
 
@@ -152,3 +152,5 @@ export type IssueCreatorFromSchema<T extends GenericSchema> = IssueCreatorChain<
     DeepNonNullable<ReturnType<T['parse']>>
 > &
 IssueCreatorMethods
+
+export type MaybeRef<T> = Ref<T> | T
