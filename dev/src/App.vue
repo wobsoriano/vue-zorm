@@ -1,79 +1,73 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
+import { computed, ref } from 'vue'
+import { useZorm } from 'vue-zorm'
+import { FormSchema } from './schema'
+import TodoItem from './TodoItem.vue'
+
+const zo = useZorm('signup', FormSchema, {
+  onValidSubmit(e) {
+    e.preventDefault()
+    // eslint-disable-next-line no-alert
+    alert(JSON.stringify(e.data, null, 2))
+  },
+})
+
+const canSubmit = computed(() => zo.validation?.success !== false)
+
+const todos = ref(1)
+const addTodo = () => todos.value++
+
+const range = computed(() => Array(todos.value).fill(0).map((_, i) => i))
 </script>
 
 <template>
-  <header>
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">
-          Basic
-        </RouterLink>
-        <RouterLink to="/array">
-          Array
-        </RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+  <form :ref="zo.getRef">
+    <h1>Todo list</h1>
+    List name
+    <input
+      type="text"
+      :name="zo.fields.meta.listName()"
+      :class="zo.errors.meta.listName('errored')"
+    >
+    <h2>Todos</h2>
+    <TodoItem
+      v-for="(_r, index) in range"
+      :key="index"
+      :index="index"
+      :zorm="zo"
+    />
+    <button type="button" @click="addTodo">
+      Add todo
+    </button>
+    <button :disabled="!canSubmit" type="submit">
+      Submit all
+    </button>
+    <pre>
+        Validation status: {{ JSON.stringify(zo.validation, null, 2) }}
+    </pre>
+  </form>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
+<style>
+button[type="submit"] {
   margin-top: 2rem;
+  padding: 1rem;
+}
+fieldset {
+  margin: 1rem;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
+.errored {
+  border: 4px solid red;
 }
 
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
+.error-message {
+  font-size: small;
+  color: red;
 }
 
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+input,
+button {
+  display: block;
 }
 </style>
