@@ -2,7 +2,7 @@
 
 Type-safe `<form>` for Vue using [Zod](https://github.com/colinhacks/zod)!
 
-Vue port of [react-zorm](https://github.com/esamattis/react-zorm).
+Vue port of [react-zorm](https://github.com/esamattis/react-zorm). Docs in-progress.
 
 Features / opinions
 
