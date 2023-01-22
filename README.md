@@ -172,6 +172,36 @@ const zo = useZorm('signup', FormSchema, {
 })
 ```
 
+## FAQ
+
+### When Zorm validates?
+
+When the form submits and on input blurs after the first submit attempt.
+
+If you want total control over this, pass in `setupListeners: false` and call `validate()` manually when you need. Note that now you need to manually prevent submitting when the form is invalid.
+
+```vue
+<script setup lang="ts">
+import { FormSchema } from 'path/to/schema'
+import { useZorm } from 'vue-zorm'
+
+const zo = useZorm('signup', FormSchema, { setupListeners: false })
+
+function onSubmit() {
+  const validation = zo.validate()
+
+  if (!validation.success)
+    e.preventDefault()
+}
+</script>
+
+<template>
+  <form :ref="zo.getRef" @submit="onSubmit">
+    <!-- ... -->
+  </form>
+</template>
+```
+
 ## License
 
 MIT
