@@ -1,6 +1,5 @@
 /* eslint-disable vue/one-component-per-file */
 import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
-import { afterEach, expect, test, vi } from 'vitest'
 import { defineComponent, watch } from 'vue'
 import userEvent from '@testing-library/user-event'
 import * as z from 'zod'
@@ -45,7 +44,7 @@ test('single field validation', async () => {
 
   await fireEvent.submit(screen.getByTestId('form'))
 
-  expect(screen.queryByTestId('error')?.textContent).toBe('too_small')
+  expect(screen.queryByTestId('error')).toHaveTextContent('too_small')
 })
 
 test('first blur does not trigger error', async () => {
@@ -63,7 +62,7 @@ test('first blur does not trigger error', async () => {
 
   await fireEvent.blur(screen.getByTestId('input'))
 
-  expect(screen.queryByTestId('ok')?.textContent).toBe('ok')
+  expect(screen.queryByTestId('ok')).toHaveTextContent('ok')
 })
 
 test('form is validated on blur after the first submit', async () => {
@@ -81,12 +80,12 @@ test('form is validated on blur after the first submit', async () => {
 
   await fireEvent.submit(screen.getByTestId('form'))
 
-  expect(screen.queryByTestId('error')?.textContent).toBe('error')
+  expect(screen.queryByTestId('error')).toHaveTextContent('error')
 
   await userEvent.type(screen.getByTestId('input'), 'content')
   await fireEvent.blur(screen.getByTestId('input'))
 
-  expect(screen.queryByTestId('ok')?.textContent).toBe('ok')
+  expect(screen.queryByTestId('ok')).toHaveTextContent('ok')
 })
 
 test('form data is validated', async () => {
@@ -122,4 +121,22 @@ test('form data is validated', async () => {
   await fireEvent.submit(screen.getByTestId('form'))
 
   expect(spy).toHaveBeenCalledWith({ thing: 'content' })
+})
+
+test('class name shortcut', async () => {
+  const App = createComponentWithSchema({
+    template: `
+      <form data-testid="form" :ref="zo.getRef">
+        <input data-testid="input" :name="zo.fields.thing()" :class="zo.errors.thing('errored')" />
+      </form>
+    `,
+  })
+
+  render(App)
+
+  expect(screen.queryByTestId('input')).not.toHaveClass('errored')
+
+  await fireEvent.submit(screen.getByTestId('form'))
+
+  expect(screen.queryByTestId('input')).toHaveClass('errored')
 })

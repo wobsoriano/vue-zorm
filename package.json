@@ -58,9 +58,12 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^0.34.0",
+    "@testing-library/dom": "^8.20.0",
+    "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/user-event": "^14.4.3",
     "@testing-library/vue": "^6.6.1",
     "@types/node": "^18.11.18",
+    "@types/testing-library__jest-dom": "^5.14.5",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vue/test-utils": "^2.2.7",
     "eslint": "^8.30.0",
