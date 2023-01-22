@@ -140,6 +140,36 @@ export default eventHandler(async (event) => {
 })
 ```
 
+### Server-side field errors
+
+The `useZorm()` composable can take in any additional `ZodIssue`s via the `customIssues` option:
+
+```ts
+const zo = useZorm('signup', FormSchema, {
+  customIssues: [
+    {
+      code: 'custom',
+      path: ['username'],
+      message: 'The username is already in use',
+    },
+  ],
+})
+```
+
+These issues can be generated anywhere. Most commonly on the server. The error chain will render these issues on the matching paths just like the errors coming from the schema.
+
+To make their generation type-safe vue-zorm exports `createCustomIssues()` chain to make it easy:
+
+```ts
+const issues = createCustomIssues(FormSchema)
+
+issues.username('Username already in use')
+
+const zo = useZorm('signup', FormSchema, {
+  customIssues: issues.toArray(),
+})
+```
+
 ## License
 
 MIT
