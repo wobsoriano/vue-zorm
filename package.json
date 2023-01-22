@@ -50,7 +50,8 @@
     "lint": "eslint .",
     "prepublishOnly": "pnpm build",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "vue": "^3.2.0",

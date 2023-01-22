@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
 import { defineComponent, watch } from 'vue'
 import userEvent from '@testing-library/user-event'
+import { vi } from 'vitest'
 import * as z from 'zod'
 import { useZorm } from '../src'
 
