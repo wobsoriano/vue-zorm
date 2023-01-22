@@ -17,7 +17,7 @@ Features / opinions
     -   Nuxt, vite-plugin-ssr, Express, Node.js, CF Workers, Deno etc.
 -   Tiny: Less than 5kb (minified & gzipped)
     -   Tree shakes to be even smaller!
-    -   No dependencies, only peer deps for React and Zod
+    -   No dependencies, only peer deps for Vue and Zod
 -   No controlled inputs or context providers required
     -   The form is validated directly from the `<form>` DOM element
     -   As performant as Vue form libraries can get!
@@ -125,6 +125,20 @@ and put the array index to `users(index)`:
 ```
 
 And all this is type checked 👌
+
+## Server-side validation
+
+This is Nuxt but Vue Zorm does not actually use any Nuxt APIs so this method can be adapted to any JavaScript based server.
+
+```ts
+import { parseForm } from 'vue-zorm'
+
+export default eventHandler(async (event) => {
+  const form = await readBody(event)
+  // Get parsed and typed form object. This throws on validation errors.
+  const data = parseForm(FormSchema, form)
+})
+```
 
 ## License
 
