@@ -582,5 +582,91 @@ test('can add custom issues with params', async () => {
   expect(screen.queryByTestId('error')).toHaveTextContent('thing')
 })
 
+test('normal issues are rendered first', async () => {
+  const Schema = z.object({
+    thing: z.string().min(5),
+  })
+
+  const issues = createCustomIssues(Schema)
+  issues.thing('custom issue')
+
+  const App = defineComponent({
+    setup() {
+      const zo = useZorm('form', Schema, {
+        customIssues: issues.toArray(),
+      })
+
+      return {
+        zo,
+      }
+    },
+    template: `
+      <form data-testid="form" :ref="zo.getRef">
+        <input :name="zo.fields.thing()" />
+        <div v-if="zo.errors.thing()" data-testid="error">
+          {{ zo.errors.thing()?.message }}
+        </div>
+      </form>
+    `,
+  })
+
+  render(App)
+
+  await fireEvent.submit(screen.getByTestId('form'))
+
+  expect(screen.queryByTestId('error')).toHaveTextContent(
+    'String must contain at least 5 character(s)',
+  )
+})
+
+test('custom issues does not prevent submitting', async () => {
+  const validSubmitSpy = vi.fn()
+  const formSubmitSpy = vi.fn()
+
+  const Schema = z.object({
+    thing: z.string(),
+  })
+
+  const issues = createCustomIssues(Schema)
+  issues.thing('custom issue')
+
+  const App = defineComponent({
+    setup() {
+      const zo = useZorm('form', Schema, {
+        customIssues: issues.toArray(),
+        onValidSubmit() {
+          validSubmitSpy()
+        },
+      })
+
+      function onSubmit(e: SubmitEvent) {
+        formSubmitSpy({ defaultPrevented: e.defaultPrevented })
+      }
+
+      return {
+        onSubmit,
+        zo,
+      }
+    },
+    template: `
+      <form data-testid="form" :ref="zo.getRef" @submit="onSubmit">
+        <input :name="zo.fields.thing()" />
+        <div v-if="zo.errors.thing()" data-testid="error">
+          {{ zo.errors.thing()?.message }}
+        </div>
+      </form>
+    `,
+  })
+
+  render(App)
+
+  await fireEvent.submit(screen.getByTestId('form'))
+
+  expect(validSubmitSpy).toBeCalledTimes(1)
+
+  expect(formSubmitSpy).toBeCalledTimes(1)
+  expect(formSubmitSpy).toHaveBeenLastCalledWith({ defaultPrevented: false })
+})
+
 // More tests
 // https://github.com/esamattis/react-zorm/blob/master/packages/react-zorm/__tests__/use-zorm.test.tsx#L600
