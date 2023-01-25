@@ -182,6 +182,47 @@ const zo = useZorm('signup', FormSchema, {
 })
 ```
 
+## The Chains
+
+The chains are a way to access the form validation state in a type safe way.
+The invocation via `()` returns the chain value. On the `fields` chain the value is the `name` input attribute
+and the `errors` chain it is the possible ZodIssue object for the field.
+
+There few other option for invoking the chain:
+
+### `fields` invocation
+
+Return values for different invocation types
+
+-   `("name"): string` - The `name` attribute value
+-   `("id"): string` - Unique `id` attribute value to be used with labels and `aria-describedby`
+-   `(): string` - The default, same as `"name"`
+-   `(index: number): FieldChain` - Special case for setting array indices
+
+### `errors` invocation
+
+-   `(): ZodIssue | undefined` - Possible ZodIssue object
+-   `(value: T): T | undefined` - Return the passed value on error. Useful for
+    setting class names for example
+-   `(value: typeof Boolean): boolean` - Return `true` when there's an error and `false`
+    when it is ok. Example `.field(Boolean)`.
+-   `<T>(render: (issue: ZodIssue) => T): T | undefined` - Invoke the passed
+    function with the `ZodIssue` and return its return value. When there's no error
+    a `undefined` is returned. Useful for rendering error message components
+-   `(index: number): ErrorChain` - Special case for accessing array elements
+
+## Using input values during rendering
+
+The first tool you should reach is Vue. Just make the input controlled with
+`ref()`. This works just fine with checkboxes, radio buttons and even with
+text inputs when the form is small. Vue Zorm is not really interested how the
+inputs get on the form. It just reads the `value` attributes using the
+platform form APIs (FormData).
+
+But if you have a larger form where you need to read the input value and you
+find it too heavy to read it with just `ref()` you can use `useValue()`
+from Zorm.
+
 ## FAQ
 
 ### When Zorm validates?
