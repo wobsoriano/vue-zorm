@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/vue'
-import { defineComponent, watch } from 'vue'
+import { defineComponent, ref, watch } from 'vue'
 import userEvent from '@testing-library/user-event'
 import { vi } from 'vitest'
 import * as z from 'zod'
@@ -670,6 +670,44 @@ test('custom issues does not prevent submitting', async () => {
 
 test.todo('normal issues prevent submitting', () => {
   // for some reason, defaultPrevented key is missing
+})
+
+test('updates onValidSubmit() closure', async () => {
+  const Schema = z.object({
+    thing: z.string().min(1),
+  })
+  const spy = vi.fn()
+
+  const App = defineComponent({
+    setup() {
+      const ding = ref('ding')
+
+      const zo = useZorm('form', Schema, {
+        onValidSubmit(e) {
+          spy(ding.value)
+          e.preventDefault()
+        },
+      })
+
+      return {
+        zo,
+        ding,
+      }
+    },
+    template: `
+      <form data-testid="form" :ref="zo.getRef">
+        <input :name="zo.fields.thing()" defaultValue="ok" />
+        <button type="button" data-testid="button" @click="ding = 'dong'">dong</button>
+      </form>
+    `,
+  })
+
+  render(App)
+
+  await fireEvent.click(screen.getByTestId('button'))
+  await fireEvent.submit(screen.getByTestId('form'))
+
+  expect(spy).toHaveBeenCalledWith('dong')
 })
 
 // More tests
