@@ -668,5 +668,9 @@ test('custom issues does not prevent submitting', async () => {
   expect(formSubmitSpy).toHaveBeenLastCalledWith({ defaultPrevented: false })
 })
 
+test.todo('normal issues prevent submitting', () => {
+  // for some reason, defaultPrevented key is missing
+})
+
 // More tests
 // https://github.com/esamattis/react-zorm/blob/master/packages/react-zorm/__tests__/use-zorm.test.tsx#L600
