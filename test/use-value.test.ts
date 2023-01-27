@@ -1,5 +1,5 @@
 import { cleanup, render, screen } from '@testing-library/vue'
-import { defineComponent } from 'vue'
+import { defineComponent, nextTick } from 'vue'
 import userEvent from '@testing-library/user-event'
 import * as z from 'zod'
 import { useValue, useZorm } from '../src'
@@ -51,4 +51,37 @@ test('can read value with useValue()', async () => {
   await userEvent.type(screen.getByTestId('input'), 'value2')
 
   expect(screen.queryByTestId('value')).toHaveTextContent('value1value2')
+})
+
+test('renders default value', async () => {
+  const Schema = z.object({
+    thing: z.string().min(1),
+  })
+
+  const App = defineComponent({
+    setup() {
+      const zo = useZorm('form', Schema)
+      const value = useValue({
+        name: zo.fields.thing(),
+        zorm: zo,
+      })
+
+      return {
+        zo,
+        value,
+      }
+    },
+    template: `
+    <form data-testid="form" :ref="zo.getRef">
+      <input data-testid="input" :name="zo.fields.thing()" defaultValue="defaultvalue" />
+      <div data-testid="value">{{ value }}</div>
+    </form>
+  `,
+  })
+
+  render(App)
+
+  await nextTick()
+
+  expect(screen.queryByTestId('value')).toHaveTextContent('defaultvalue')
 })

@@ -1,3 +1,4 @@
+import type { Ref } from 'vue'
 import { ref, watchPostEffect } from 'vue'
 import { isValuedElement } from './utils'
 
@@ -13,7 +14,7 @@ export interface ValueSubscription<T> {
 
 export function useValue<T>(
   opts: ValueSubscription<T>,
-): undefined extends T ? string : T {
+): undefined extends T ? Ref<string> : Ref<T> {
   const value = ref<any>(opts.initialValue ?? '')
   const mapRef = ref<((value: string) => T) | undefined>(opts.transform)
 
