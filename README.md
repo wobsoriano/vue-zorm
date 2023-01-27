@@ -270,7 +270,7 @@ function onSubmit(e) {
 </template>
 ```
 
-### How to handle 3rdparty components?
+### How to handle 3rd party components?
 
 That do not create `<input>` elements?
 
