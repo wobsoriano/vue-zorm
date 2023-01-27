@@ -1,14 +1,13 @@
-import { type Ref, ref, unref, watchPostEffect } from 'vue'
-import type { MaybeRef } from './types'
+import { ref, watchPostEffect } from 'vue'
 import { isValuedElement } from './utils'
 
 export interface ValueSubscription<T> {
-  name: MaybeRef<string>
+  name: string
   zorm: {
-    refObject: Ref<HTMLElement>
+    form: HTMLElement | null
   }
   initialValue?: T
-  event?: MaybeRef<string>
+  event?: string
   transform?: (value: string) => T
 }
 
@@ -19,7 +18,7 @@ export function useValue<T>(
   const mapRef = ref<((value: string) => T) | undefined>(opts.transform)
 
   watchPostEffect((onInvalidate) => {
-    const form = opts.zorm.refObject.value
+    const form = opts.zorm.form
     if (!form)
       return
 
@@ -29,21 +28,21 @@ export function useValue<T>(
       if (!isValuedElement(input))
         return
 
-      if (unref(opts.name) !== input.name)
+      if (opts.name !== input.name)
         return
 
       if (mapRef.value)
-        value.value(mapRef.value(input.value))
+        value.value = mapRef.value(input.value)
       else
-        value.value(input.value ?? '')
+        value.value = input.value ?? ''
     }
 
-    const initialInput = form.querySelector(`[name="${unref(opts.name)}"]`)
+    const initialInput = form.querySelector(`[name="${opts.name}"]`)
 
     if (initialInput)
       listener({ target: initialInput })
 
-    const event = unref(opts.event) ?? 'input'
+    const event = opts.event ?? 'input'
 
     form.addEventListener(event, listener)
 
