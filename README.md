@@ -270,6 +270,20 @@ function onSubmit(e) {
 </template>
 ```
 
+### How to handle 3rdparty components?
+
+That do not create `<input>` elements?
+
+Since Zorm just works with the native `<form>` you must sync their state to `<input type="hidden">` elements in order for them to become actually part of the form.
+
+### How to validate dependent fields like password confirm?
+
+See https://twitter.com/esamatti/status/1488553690613039108
+
+### How to translate form error messages to other languages?
+
+Use the `ZodIssue`'s `.code` properties to render corresponding error messages based on the current language instead of just rendering the `.message`.
+
 ## License
 
 MIT
