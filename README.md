@@ -223,6 +223,22 @@ But if you have a larger form where you need to read the input value and you
 find it too heavy to read it with just `ref()` you can use `useValue()`
 from Zorm.
 
+```html
+<script setup lang="ts">
+import { FormSchema } from 'path/to/schema'
+import { useValue, useZorm } from 'vue-zorm'
+
+const zo = useZorm("form", FormSchema);
+const value = useValue({ zorm: zo, name: zo.fields.input() });
+</script>
+
+<template>
+  <form :ref="zo.getRef">
+    ...
+  </form>
+</template>
+```
+
 ## FAQ
 
 ### When Zorm validates?
