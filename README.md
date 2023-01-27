@@ -284,6 +284,46 @@ See https://twitter.com/esamatti/status/1488553690613039108
 
 Use the `ZodIssue`'s `.code` properties to render corresponding error messages based on the current language instead of just rendering the `.message`.
 
+### How to use checkboxes?
+
+Checkboxes can result to simple booleans or arrays of selected values. These custom Zod types can help with them.
+
+```ts
+const booleanCheckbox = () =>
+  z
+    .string()
+    // Unchecked checkbox is just missing so it must be optional
+    .optional()
+    // Transform the value to boolean
+    .transform(Boolean)
+
+const arrayCheckbox = () =>
+  z
+    .array(z.string().nullish())
+    .nullish()
+    // Remove all nulls to ensure string[]
+    .transform(a => (a ?? []).flatMap(item => (item || [])))
+```
+
+### How to submit the form as JSON?
+
+Prevent the default submission in `onValidSubmit()` and use `fetch()`:
+
+```ts
+const zo = useZorm('todos', FormSchema, {
+  onValidSubmit: async (event) => {
+    event.preventDefault()
+    await fetch('/api/form-handler', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(event.data),
+    })
+  },
+})
+```
+
 ## License
 
 MIT
