@@ -1,6 +1,6 @@
 {
   "name": "vue-zorm",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "packageManager": "pnpm@7.25.0",
   "description": "",
   "author": "Robert Soriano <sorianorobertc@gmail.com>",
