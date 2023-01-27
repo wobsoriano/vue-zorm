@@ -228,13 +228,14 @@ from Zorm.
 import { FormSchema } from 'path/to/schema'
 import { useValue, useZorm } from 'vue-zorm'
 
-const zo = useZorm("form", FormSchema);
+const zo = useZorm('form', FormSchema)
 const value = useValue({ zorm: zo, name: zo.fields.input() });
 </script>
 
 <template>
   <form :ref="zo.getRef">
-    ...
+    <input :name="zo.fields.thing()" />
+    <div>Value: {{ value }}</div>
   </form>
 </template>
 ```
