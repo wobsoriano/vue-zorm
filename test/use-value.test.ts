@@ -248,3 +248,107 @@ test('can read lazily rendered default value', async () => {
 
   expect(screen.queryByTestId('value')).toHaveTextContent('defaultvalue')
 })
+
+test('can read checkbox', async () => {
+  const Schema = z.object({
+    checkbox: z.string().optional(),
+  })
+
+  const App = defineComponent({
+    setup() {
+      const zo = useZorm('form', Schema)
+
+      const value = useValue({
+        name: zo.fields.checkbox(),
+        zorm: zo,
+        initialValue: false,
+        transform: (value) => {
+          return Boolean(value)
+        },
+      })
+
+      assertNotAny(value)
+
+      return {
+        zo,
+        value,
+      }
+    },
+    template: `
+    <form data-testid="form" :ref="zo.getRef">
+      <input data-testid="checkbox" :name="zo.fields.checkbox()" />
+      <div data-testid="value">
+          {{ typeof value }}: {{ String(value) }}
+      </div>
+    </form>
+  `,
+  })
+
+  render(App)
+
+  expect(screen.queryByTestId('value')).toHaveTextContent('boolean: false')
+
+  // This does not emit bubbling input event like in browser
+  //     userEvent.click(screen.getByTestId("checkbox"));
+  // So simulate it manually:
+
+  const checkbox = screen.getByTestId('checkbox')
+  if (checkbox instanceof HTMLInputElement)
+    checkbox.value = 'on'
+
+  const event = new Event('input', {
+    bubbles: true,
+    cancelable: true,
+  })
+  checkbox.dispatchEvent(event)
+
+  await nextTick()
+
+  expect(screen.queryByTestId('value')).toHaveTextContent('boolean: true')
+})
+
+test('can read checkbox', async () => {
+  const Schema = z.object({
+    select: z.string().optional(),
+  })
+
+  const App = defineComponent({
+    setup() {
+      const zo = useZorm('form', Schema)
+
+      const value = useValue({
+        name: zo.fields.select(),
+        zorm: zo,
+      })
+
+      return {
+        zo,
+        value,
+      }
+    },
+    template: `
+    <form data-testid="form" :ref="zo.getRef">
+      <select :name="zo.fields.select()" data-testid="select">
+          <option value="ding">ding</option>
+          <option value="dong" data-testid="dong">
+              dong
+          </option>
+      </select>
+      <div data-testid="value">{{value}}</div>
+    </form>
+  `,
+  })
+
+  render(App)
+
+  await nextTick()
+
+  expect(screen.queryByTestId('value')).toHaveTextContent('ding')
+
+  await userEvent.selectOptions(
+    screen.getByTestId('select'),
+    screen.getByTestId('dong'),
+  )
+
+  expect(screen.queryByTestId('value')).toHaveTextContent('dong')
+})
