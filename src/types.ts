@@ -1,5 +1,5 @@
 import type { ComponentPublicInstance, Ref } from 'vue'
-import type { ZodCustomIssue, ZodIssue, ZodType } from 'zod'
+import type { SafeParseReturnType, ZodCustomIssue, ZodIssue } from 'zod'
 
 type Primitive = string | number | boolean | bigint | symbol | undefined | null
 
@@ -97,8 +97,9 @@ export type ErrorChainFromSchema<T extends GenericSchema> = ErrorChain<
     DeepNonNullable<ReturnType<T['parse']>>
 >
 
-export type SafeParseResult<Schema extends GenericSchema> = ReturnType<
-    ZodType<Schema>['safeParse']
+export type SafeParseResult<Schema extends GenericSchema> = SafeParseReturnType<
+    any,
+    ReturnType<Schema['parse']>
 >
 
 export interface Zorm<Schema extends GenericSchema> {
