@@ -2,7 +2,7 @@
   "name": "vue-zorm",
   "version": "0.1.5",
   "packageManager": "pnpm@7.30.0",
-  "description": "",
+  "description": "Type-safe form for Vue using Zod.",
   "author": "Robert Soriano <sorianorobertc@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/wobsoriano/vue-zorm#readme",
