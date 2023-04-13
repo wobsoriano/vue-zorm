@@ -1,6 +1,6 @@
 {
   "name": "vue-zorm",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "packageManager": "pnpm@7.30.0",
   "description": "Type-safe form for Vue using Zod.",
   "author": "Robert Soriano <sorianorobertc@gmail.com>",
