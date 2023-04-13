@@ -1,10 +1,10 @@
 import { defineComponent, h } from 'vue'
-import type { ZodIssue } from 'zod'
+import type { ZodIssue, ZodType } from 'zod'
+import { ZodArray, ZodObject, z } from 'zod'
 import type {
   ErrorChainFromSchema,
   ErrorGetter,
   FieldChainFromSchema,
-  GenericSchema,
   IssueCreatorFromSchema,
   IssueCreatorMethods,
   ZodCustomIssueWithMessage,
@@ -16,26 +16,60 @@ function addArrayIndex(path: readonly string[], index: number) {
   return [...path.slice(0, -1), `${last}[${index}]`]
 }
 
-export function fieldChain<Schema extends GenericSchema>(
+function unwrapZodType(type: ZodType): ZodType {
+  if (type instanceof z.ZodObject || type instanceof z.ZodArray)
+    return type
+
+  if (type instanceof z.ZodEffects)
+    return unwrapZodType(type.innerType())
+
+  const anyType = type as any
+  if (anyType._def?.innerType)
+    return unwrapZodType(anyType._def.innerType)
+
+  return type
+}
+
+export function fieldChain<Schema extends ZodType>(
   ns: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   schema: Schema,
+  issues: ZodIssue[],
 ): FieldChainFromSchema<Schema> {
   return new Proxy(
     {},
     {
       get(_target, prop) {
-        return _fieldChain(ns, [])[prop]
+        return _fieldChain(ns, schema, issues, [])[prop]
       },
     },
   ) as any
 }
 
-function _fieldChain(ns: string, path: readonly string[]) {
+function _fieldChain(
+  ns: string,
+  schema: ZodType,
+  issues: ZodIssue[],
+  path: readonly string[],
+) {
   const proxy: any = new Proxy(() => {}, {
     apply(_target, _thisArg, args) {
-      if (typeof args[0] === 'number')
-        return _fieldChain(ns, addArrayIndex(path, args[0]))
+      if (typeof args[0] === 'number') {
+        const unwrapped = unwrapZodType(schema)
+        if (!(unwrapped instanceof ZodArray)) {
+          throw new TypeError(
+                      `Expected ZodArray at "${path.join('.')}" got ${
+                          schema.constructor.name
+                      }`,
+          )
+        }
+
+        return _fieldChain(
+          ns,
+          unwrapped.element,
+          issues,
+          addArrayIndex(path, args[0]),
+        )
+      }
 
       const name = path.join('.')
       const id = `${ns}:${path.join('.')}`
@@ -43,56 +77,73 @@ function _fieldChain(ns: string, path: readonly string[]) {
       if (args[0] === 'id')
         return id
 
-      if (typeof args[0] === 'function')
-        return args[0]({ id, name })
+      if (typeof args[0] === 'function') {
+        const matching = issues.filter((issue) => {
+          return arrayEquals(issue.path, path)
+        })
+        return args[0]({ id, name, type: schema, issues: matching })
+      }
 
       return name
     },
 
     get(_target, prop) {
-      if (typeof prop === 'string')
-        return _fieldChain(ns, [...path, prop])
+      if (typeof prop !== 'string')
+        throw new Error(`Unexpected string property: ${String(prop)}`)
 
-      return _fieldChain(ns, path)
+      const unwrapped = unwrapZodType(schema)
+      if (!(unwrapped instanceof ZodObject)) {
+        throw new TypeError(
+                  `Expected ZodObject at "${path.join('.')}" got ${
+                      schema.constructor.name
+                  }`,
+        )
+      }
+
+      return _fieldChain(ns, unwrapped.shape[prop], issues, [
+        ...path,
+        prop,
+      ])
     },
   })
 
   return proxy
 }
 
-const noop = () => {}
-
-export function errorChain<Schema extends GenericSchema>(
+export function errorChain<Schema extends ZodType>(
   schema: Schema,
   issues: ZodIssue[],
   _path?: readonly (string | number)[],
 ): ErrorChainFromSchema<Schema> & ErrorGetter {
   const path = _path || []
-  const proxy: any = new Proxy(noop, {
+  const proxy: any = new Proxy(() => {}, {
     apply(_target, _thisArg, args) {
       if (typeof args[0] === 'number')
         return errorChain(schema, issues, [...path, args[0]])
 
-      const issue = issues.find((issue) => {
+      const matching = issues.filter((issue) => {
         return arrayEquals(issue.path, path)
       })
+      const hasError = matching.length > 0
 
+      // Ex. zo.error.field(Boolean)
       if (args[0] === Boolean)
-        return Boolean(issue)
+        return Boolean(hasError)
 
+      // Ex. zo.error.field(error => error.message)
       if (typeof args[0] === 'function') {
-        if (issue)
-          return args[0](issue)
+        if (hasError)
+          return args[0](...matching)
 
         return undefined
       }
 
       if (args[0]) {
-        if (issue) {
+        if (hasError) {
           const isSetupComponent = typeof args[0] === 'object' && !Array.isArray(args[0]) && 'setup' in args[0]
           if (isSetupComponent) {
             return defineComponent({
-              setup: (_props, { slots }) => () => h(args[0], issue, slots),
+              setup: (_props, { slots }) => () => h(args[0], ...matching, slots),
             })
           }
 
@@ -102,7 +153,18 @@ export function errorChain<Schema extends GenericSchema>(
         else { return undefined }
       }
 
-      return issue || undefined
+      // Return itself when there is an error
+      // Ex. className={zo.error.field("errored")}
+      if (args[0]) {
+        if (hasError)
+          return args[0]
+
+        else
+          return undefined
+      }
+
+      // without args return the first error if any
+      return matching[0]
     },
 
     get(_target, prop) {
@@ -116,7 +178,7 @@ export function errorChain<Schema extends GenericSchema>(
   return proxy
 }
 
-export function createCustomIssues<Schema extends GenericSchema>(
+export function createCustomIssues<Schema extends ZodType>(
   schema: Schema,
   _state?: {
     path: (string | number)[]
@@ -129,8 +191,8 @@ export function createCustomIssues<Schema extends GenericSchema>(
   }
 
   /**
-     * Methods that are available at the chain root
-     */
+   * Methods that are available at the chain root
+   */
   const methods: IssueCreatorMethods = {
     toJSON: () => state.issues.slice(0),
     toArray: () => state.issues.slice(0),

@@ -1,5 +1,5 @@
 import { type ComponentPublicInstance, computed, reactive, ref, unref } from 'vue'
-import type { ZodIssue, ZodType } from 'zod'
+import type { SafeParseReturnType, ZodIssue, ZodType } from 'zod'
 import { errorChain, fieldChain } from './chains'
 import { safeParseForm } from './parse-form'
 import type { MaybeRef, Zorm } from './types'
@@ -21,7 +21,7 @@ export interface ValidSubmitEvent<Data> {
   data: Data
 }
 
-export interface UseZormOptions<Data> {
+export interface UseZormOptions<Data extends SafeParseReturnType<any, any>> {
   /**
      * Called when the form is submitted with valid data
      */
@@ -30,6 +30,8 @@ export interface UseZormOptions<Data> {
   setupListeners?: MaybeRef<boolean>
 
   customIssues?: MaybeRef<ZodIssue[]>
+
+  onFormData?: (event: FormDataEvent) => any
 }
 
 export function useZorm<Schema extends ZodType<any>>(
@@ -37,87 +39,89 @@ export function useZorm<Schema extends ZodType<any>>(
   schema: Schema,
   options?: UseZormOptions<ReturnType<Schema['parse']>>,
 ): Zorm<Schema> {
-    type ValidationResult = ReturnType<Schema['safeParse']>
+  type ValidationResult = SafeParseReturnType<
+    any,
+    ReturnType<Schema['parse']>
+  >
 
-    const formRef = ref<HTMLFormElement | null>(null)
-    const submittedOnceRef = ref(false)
-    const submitRef = ref<
-        UseZormOptions<ValidationResult>['onValidSubmit'] | undefined
-    >(options?.onValidSubmit)
-    submitRef.value = options?.onValidSubmit
+  const formRef = ref<HTMLFormElement | null>(null)
+  const submittedOnceRef = ref(false)
+  const submitRef = ref<
+    UseZormOptions<ReturnType<Schema['parse']>>['onValidSubmit'] | undefined
+  >(options?.onValidSubmit)
+  submitRef.value = options?.onValidSubmit
 
-    const validation = ref<ValidationResult | null>(null)
+  const validation = ref<ValidationResult | null>(null)
 
-    function getForm(el: Element | ComponentPublicInstance | null) {
-      const form = el as HTMLFormElement
-      if (form !== formRef.value) {
-        if (formRef.value) {
-          formRef.value.removeEventListener(
-            'change',
-            changeHandler,
-          )
-          formRef.value.removeEventListener(
-            'submit',
-            submitHandler,
-          )
-        }
-
-        if (form && unref(options?.setupListeners) !== false) {
-          form.addEventListener('change', changeHandler)
-          form.addEventListener('submit', submitHandler)
-        }
-        formRef.value = form ?? null
+  function getForm(el: Element | ComponentPublicInstance | null) {
+    const form = el as HTMLFormElement
+    if (form !== formRef.value) {
+      if (formRef.value) {
+        formRef.value.removeEventListener(
+          'change',
+          changeHandler,
+        )
+        formRef.value.removeEventListener(
+          'submit',
+          submitHandler,
+        )
       }
-    }
 
-    function validate() {
-      const res = safeParseForm(schema, formRef.value!)
-      validation.value = res as any
-      return res
-    }
-
-    function changeHandler() {
-      if (!submittedOnceRef.value)
-        return
-
-      validate()
-    }
-
-    function submitHandler(e: { preventDefault(): any }) {
-      submittedOnceRef.value = true
-      const validation = validate()
-
-      if (!validation.success) {
-        e.preventDefault()
+      if (form && unref(options?.setupListeners) !== false) {
+        form.addEventListener('change', changeHandler)
+        form.addEventListener('submit', submitHandler)
       }
-      else {
-        submitRef.value?.({
-          data: validation.data,
-          target: formRef.value!,
-          preventDefault: () => {
-            e.preventDefault()
-          },
-        })
-      }
+      formRef.value = form ?? null
     }
+  }
 
-    const customIssues = computed(() => unref(options?.customIssues) ?? [])
-    const error = computed(() => !validation.value?.success ? validation.value?.error : undefined)
+  function validate() {
+    const res = safeParseForm(schema, formRef.value!)
+    validation.value = res as any
+    return res
+  }
 
-    const errors = computed(() => errorChain(schema, [
-      ...error.value?.issues ?? [],
-      ...customIssues.value,
-    ]))
+  function changeHandler() {
+    if (!submittedOnceRef.value)
+      return
 
-    const fields = fieldChain(unref(formName), schema)
+    validate()
+  }
 
-    return reactive({
-      getRef: getForm,
-      validate,
-      form: formRef,
-      validation,
-      fields,
-      errors,
-      customIssues,
-    }) as Zorm<Schema>
+  function submitHandler(e: { preventDefault(): any }) {
+    submittedOnceRef.value = true
+    const validation = validate()
+
+    if (!validation.success) {
+      e.preventDefault()
+    }
+    else {
+      submitRef.value?.({
+        data: validation.data,
+        target: formRef.value!,
+        preventDefault: () => {
+          e.preventDefault()
+        },
+      })
+    }
+  }
+
+  const customIssues = computed(() => unref(options?.customIssues) ?? [])
+  const error = computed(() => !validation.value?.success ? validation.value?.error : undefined)
+
+  const allIssues = computed(() => [...(error.value?.issues ?? []), ...customIssues.value])
+
+  const errors = computed(() => errorChain(schema, allIssues.value))
+
+  const fields = computed(() => fieldChain(unref(formName), schema, allIssues.value))
+
+  return reactive({
+    getRef: getForm,
+    validate,
+    form: formRef,
+    validation,
+    fields,
+    errors,
+    customIssues,
+  }) as Zorm<Schema>
 }

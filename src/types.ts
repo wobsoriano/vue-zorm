@@ -1,5 +1,5 @@
 import type { ComponentPublicInstance, Ref } from 'vue'
-import type { SafeParseReturnType, ZodCustomIssue, ZodIssue } from 'zod'
+import type { SafeParseReturnType, ZodCustomIssue, ZodIssue, ZodType } from 'zod'
 
 type Primitive = string | number | boolean | bigint | symbol | undefined | null
 
@@ -13,25 +13,28 @@ export interface ZormError {
   issues: ZodIssue[]
 }
 
-/**
- * Something like Zod schema
- */
-export interface GenericSchema {
-  parse: (arg: any) => any
-  safeParse: (arg: any) => any
+export type GenericSchema = ZodType
+
+export interface RenderProps {
+  name: string
+  id: string
+  errorId: string
+  type: ZodType
+  issues: ZodIssue[]
 }
 
 export type FieldGetter = <
-    Arg extends
-    | undefined
-    | 'id'
-    | 'name'
-    | ((props: { name: string; id: string }) => any),
+  Arg extends
+  | undefined
+  | 'name'
+  | 'id'
+  | 'errorid'
+  | ((props: RenderProps) => any),
 >(
-    arg?: Arg,
+  arg?: Arg,
 ) => undefined extends Arg
   ? string
-  : Arg extends (props: { name: string; id: string }) => any
+  : Arg extends (props: RenderProps) => any
     ? ReturnType<Arg>
     : string
 

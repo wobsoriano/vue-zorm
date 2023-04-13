@@ -1,3 +1,4 @@
+import type { SafeParseReturnType } from 'zod'
 import { setIn } from './set-in'
 import type { GenericSchema } from './types'
 
@@ -64,6 +65,6 @@ export function parseForm<P extends GenericSchema>(
 export function safeParseForm<P extends GenericSchema>(
   schema: P,
   form: HTMLFormElement | FormData,
-): ReturnType<P['safeParse']> {
+): SafeParseReturnType<any, ReturnType<P['parse']>> {
   return schema.safeParse(parseFormAny(form))
 }
