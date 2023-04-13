@@ -51,27 +51,58 @@ export function useZorm<Schema extends ZodType<any>>(
   >(options?.onValidSubmit)
   submitRef.value = options?.onValidSubmit
 
+  const formDataRef = ref<
+        UseZormOptions<ReturnType<Schema['parse']>>['onFormData'] | undefined
+  >(options?.onFormData)
+
   const validation = ref<ValidationResult | null>(null)
+
+  function changeHandler() {
+    if (!submittedOnceRef.value)
+      return
+
+    validate()
+  }
+
+  function invalidHandler() {
+    submittedOnceRef.value = true
+    validate()
+  }
+
+  function formdataHandler(event: FormDataEvent) {
+    formDataRef.value?.(event)
+  }
 
   function getForm(el: Element | ComponentPublicInstance | null) {
     const form = el as HTMLFormElement
     if (form !== formRef.value) {
       if (formRef.value) {
-        formRef.value.removeEventListener(
-          'change',
-          changeHandler,
-        )
-        formRef.value.removeEventListener(
-          'submit',
-          submitHandler,
-        )
+        const off = formRef.value.removeEventListener.bind(formRef.value)
+
+        off('change', changeHandler)
+        off('submit', submitHandler)
+        off('invalid', invalidHandler, false)
+        off('formdata', formdataHandler)
       }
 
       if (form && unref(options?.setupListeners) !== false) {
         form.addEventListener('change', changeHandler)
         form.addEventListener('submit', submitHandler)
+        form.addEventListener('formdata', formdataHandler)
+
+        // The form does not submit when it is invalid due to html5
+        // attributes (ex. required, min, max, etc.). So detect
+        // invalid form state with the "invalid" event and run our
+        // own validation on it too.
+        form.addEventListener(
+          'invalid',
+          invalidHandler,
+          // "invalid" event does not bubble so listen on capture
+          // phase by setting capture to true
+          true,
+        )
       }
-      formRef.value = form ?? null
+      formRef.value = form ?? undefined
     }
   }
 
@@ -79,13 +110,6 @@ export function useZorm<Schema extends ZodType<any>>(
     const res = safeParseForm(schema, formRef.value!)
     validation.value = res as any
     return res
-  }
-
-  function changeHandler() {
-    if (!submittedOnceRef.value)
-      return
-
-    validate()
   }
 
   function submitHandler(e: { preventDefault(): any }) {
